@@ -2,7 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "Andor3Capture"
+			"path" : "Andor3Capture.exe"
+		},
+		{
+			"path" : "Andor3Capture.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -49,18 +52,18 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -std=gnu++17"
+					"fragment" : "-std=gnu++17"
 				}
 			],
 			"includes" : 
 			[
 				{
 					"backtrace" : 3,
-					"path" : "/home/william/IdeaProjects/Andor3Capture/include"
+					"path" : "C:/Users/HERA/Documents/GitHub/Andor3Capture/include"
 				},
 				{
 					"backtrace" : 3,
-					"path" : "/home/william/IdeaProjects/Andor3Capture"
+					"path" : "C:/Users/HERA/Documents/GitHub/Andor3Capture"
 				}
 			],
 			"language" : "CXX",
@@ -84,27 +87,23 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-g",
-				"role" : "flags"
-			},
-			{
 				"fragment" : "",
 				"role" : "flags"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/william/IdeaProjects/Andor3Capture",
+				"backtrace" : 2,
+				"fragment" : "\"C:\\\\Program Files\\\\Andor SDK3\\\\atcore.dll\"",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
-				"fragment" : "/home/william/IdeaProjects/Andor3Capture/libatcore.so",
+				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
 				"role" : "libraries"
 			}
 		],
 		"language" : "CXX"
 	},
 	"name" : "Andor3Capture",
-	"nameOnDisk" : "Andor3Capture",
+	"nameOnDisk" : "Andor3Capture.exe",
 	"paths" : 
 	{
 		"build" : ".",

@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "Andor3Capture::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Andor3Capture-Debug-5a8581265d4c10934366.json",
+					"jsonFile" : "target-Andor3Capture-Debug-5347de56672eadb5b67e.json",
 					"name" : "Andor3Capture",
 					"projectIndex" : 0
 				}
@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/william/IdeaProjects/Andor3Capture/build",
-		"source" : "/home/william/IdeaProjects/Andor3Capture"
+		"build" : "C:/Users/HERA/Documents/GitHub/Andor3Capture/build",
+		"source" : "C:/Users/HERA/Documents/GitHub/Andor3Capture"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 6
+		"minor" : 7
 	}
 }
