@@ -1,0 +1,1 @@
+/usr/bin/g++-11 -g CMakeFiles/Andor3Capture.dir/main.cpp.o -o Andor3Capture  -Wl,-rpath,/home/william/IdeaProjects/Andor3Capture /home/william/IdeaProjects/Andor3Capture/libatcore.so 

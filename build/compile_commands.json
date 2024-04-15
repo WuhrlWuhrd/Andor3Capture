@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/william/IdeaProjects/Andor3Capture/build",
+  "command": "/usr/bin/g++-11  -I/home/william/IdeaProjects/Andor3Capture/include -I/home/william/IdeaProjects/Andor3Capture -g -std=gnu++17 -o CMakeFiles/Andor3Capture.dir/main.cpp.o -c /home/william/IdeaProjects/Andor3Capture/main.cpp",
+  "file": "/home/william/IdeaProjects/Andor3Capture/main.cpp",
+  "output": "CMakeFiles/Andor3Capture.dir/main.cpp.o"
+}
+]
