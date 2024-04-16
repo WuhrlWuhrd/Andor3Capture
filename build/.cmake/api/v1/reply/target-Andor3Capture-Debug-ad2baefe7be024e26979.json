@@ -39,6 +39,12 @@
 				"parent" : 0
 			},
 			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 9,
+				"parent" : 0
+			},
+			{
 				"command" : 2,
 				"file" : 0,
 				"line" : 5,
@@ -58,11 +64,11 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "C:/Users/HERA/Documents/GitHub/Andor3Capture/include"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "C:/Users/HERA/Documents/GitHub/Andor3Capture"
 				}
 			],
@@ -93,6 +99,11 @@
 			{
 				"backtrace" : 2,
 				"fragment" : "\"C:\\\\Program Files\\\\Andor SDK3\\\\atcore.dll\"",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "\"C:\\\\Program Files\\\\Andor SDK3\\\\atutility.dll\"",
 				"role" : "libraries"
 			},
 			{

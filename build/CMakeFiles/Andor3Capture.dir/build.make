@@ -94,6 +94,7 @@ Andor3Capture_EXTERNAL_OBJECTS =
 Andor3Capture.exe: CMakeFiles/Andor3Capture.dir/main.cpp.obj
 Andor3Capture.exe: CMakeFiles/Andor3Capture.dir/build.make
 Andor3Capture.exe: C:\\Program\ Files\\Andor\ SDK3\\atcore.dll
+Andor3Capture.exe: C:\\Program\ Files\\Andor\ SDK3\\atutility.dll
 Andor3Capture.exe: CMakeFiles/Andor3Capture.dir/linkLibs.rsp
 Andor3Capture.exe: CMakeFiles/Andor3Capture.dir/objects1.rsp
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:/Users/HERA/Documents/GitHub/Andor3Capture/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable Andor3Capture.exe"

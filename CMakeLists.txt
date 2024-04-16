@@ -6,3 +6,4 @@ include_directories(include ${CMAKE_CURRENT_LIST_DIR})
 
 add_executable(Andor3Capture main.cpp)
 target_link_libraries(Andor3Capture "C:\\Program Files\\Andor SDK3\\atcore.dll")
+target_link_libraries(Andor3Capture "C:\\Program Files\\Andor SDK3\\atutility.dll")

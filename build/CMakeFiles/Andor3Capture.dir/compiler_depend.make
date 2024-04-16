@@ -69,6 +69,7 @@ CMakeFiles/Andor3Capture.dir/main.cpp.obj: C:/Users/HERA/Documents/GitHub/Andor3
   C:/msys64/ucrt64/include/c++/13.2.0/bits/requires_hosted.h \
   C:/msys64/ucrt64/include/c++/13.2.0/bits/shared_ptr.h \
   C:/msys64/ucrt64/include/c++/13.2.0/bits/shared_ptr_base.h \
+  C:/msys64/ucrt64/include/c++/13.2.0/bits/sstream.tcc \
   C:/msys64/ucrt64/include/c++/13.2.0/bits/std_abs.h \
   C:/msys64/ucrt64/include/c++/13.2.0/bits/std_mutex.h \
   C:/msys64/ucrt64/include/c++/13.2.0/bits/std_thread.h \
@@ -126,6 +127,7 @@ CMakeFiles/Andor3Capture.dir/main.cpp.obj: C:/Users/HERA/Documents/GitHub/Andor3
   C:/msys64/ucrt64/include/c++/13.2.0/ostream \
   C:/msys64/ucrt64/include/c++/13.2.0/pstl/pstl_config.h \
   C:/msys64/ucrt64/include/c++/13.2.0/ratio \
+  C:/msys64/ucrt64/include/c++/13.2.0/sstream \
   C:/msys64/ucrt64/include/c++/13.2.0/stdexcept \
   C:/msys64/ucrt64/include/c++/13.2.0/stdlib.h \
   C:/msys64/ucrt64/include/c++/13.2.0/streambuf \
@@ -560,6 +562,8 @@ C:/msys64/ucrt64/include/c++/13.2.0/bits/parse_numbers.h:
 
 C:/msys64/ucrt64/include/winapifamily.h:
 
+C:/msys64/ucrt64/include/c++/13.2.0/sstream:
+
 C:/msys64/ucrt64/include/c++/13.2.0/bits/basic_string.h:
 
 C:/msys64/ucrt64/include/c++/13.2.0/bits/basic_string.tcc:
@@ -675,6 +679,8 @@ C:/msys64/ucrt64/include/c++/13.2.0/bits/shared_ptr.h:
 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/emmintrin.h:
 
 C:/msys64/ucrt64/include/c++/13.2.0/bits/shared_ptr_base.h:
+
+C:/msys64/ucrt64/include/c++/13.2.0/bits/sstream.tcc:
 
 C:/msys64/ucrt64/include/excpt.h:
 

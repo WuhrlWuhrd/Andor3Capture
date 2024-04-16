@@ -1,219 +1,412 @@
-#include <stdio.h>
 #include "atcore.h"
 #include "atutility.h"
-#include <string>
 #include "queue.cpp"
-#include <thread>
-#include <iostream>
-#include <fstream>
-#include <ctime>
 #include <chrono>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <thread>
 
 #define Thread thread
 #define String string
+#define WString wstring
 
 using namespace std;
 
+String wcToString(AT_WC* wc) {
+
+    WString wString = WString(wc);
+    return String(wString.begin(), wString.end());
+
+}
+
+AT_WC* stringToWC(String str) {
+
+    size_t length = str.length();
+
+    WString wString = WString(str.begin(), str.end());
+    wString.resize(length);
+    AT_WC* wc = new AT_WC[length + 1];
+    wString.copy(wc, length, 0);
+    wc[length] = L'\0';
+
+    return wc;
+
+}
+
+long getInt(AT_H handle, String feature) {
+
+    AT_64 value;
+    int result = AT_GetInt(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
+void setInt(AT_H handle, String feature, long value) {
+
+
+    int result = AT_SetInt(handle, stringToWC(feature), value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+}
+
+bool getBool(AT_H handle, String feature) {
+
+    AT_BOOL value;
+    int result = AT_GetBool(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
+void setBool(AT_H handle, String feature, bool value) {
+
+
+    int result = AT_SetBool(handle, stringToWC(feature), value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+}
+
+double getFloat(AT_H handle, String feature) {
+
+    double value;
+    int result = AT_GetFloat(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
+double getFloatMin(AT_H handle, String feature) {
+
+    double value;
+    int result = AT_GetFloatMin(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
+void setFloat(AT_H handle, String feature, double value) {
+
+
+    int result = AT_SetFloat(handle, stringToWC(feature), value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+}
+
+int getEnumInt(AT_H handle, String feature) {
+
+    int value;
+    int result = AT_GetEnumIndex(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
+void setEnumInt(AT_H handle, String feature, int index) {
+
+
+    int result = AT_SetEnumIndex(handle, stringToWC(feature), index);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+}
+
+String getEnum(AT_H handle, String feature) {
+
+    int    value  = getEnumInt(handle, feature);
+    AT_WC* chars  = new AT_WC[1024];
+    int    result = AT_GetEnumStringByIndex(handle, stringToWC(feature), value, chars, 1024);
+
+    return wcToString(chars);
+
+}
+
+void setEnum(AT_H handle, String feature, String value) {
+
+
+    int result = AT_SetEnumString(handle, stringToWC(feature), stringToWC(value));
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << " = " << value << ": " << result;
+        throw oss.str();
+    }
+
+}
+
+void printEnum(AT_H handle, String feature) {
+
+    AT_WC* f = stringToWC(feature);
+
+    int count;
+    AT_GetEnumCount(handle, f, &count);
+
+    for (int i = 0; i < count; i ++) {
+        AT_WC chars[1024];
+        AT_GetEnumStringByIndex(handle, f, i, chars, 1024);
+        AT_BOOL avail;
+        AT_BOOL impl;
+        AT_IsEnumIndexAvailable(handle, f, i, &avail);
+        AT_IsEnumIndexImplemented(handle, f, i, &impl);
+
+        cout << "Index " << i << ": " << wcToString(chars) << " (" << (impl ? "Implemented" : "Unimplemented") << ", " << (avail ? "Available" : "Unavailable") << ")" << endl;
+
+    }
+
+}
+
 class A3C {
 
-    private:
+private:
+    AT_H handle;
+    String outputPath;
+    int frameLimit;
+    int imageSize;
+    Thread acquireThread;
+    Thread processThread;
+    Thread writeThread;
+    FIFOQueue<unsigned char *> processQueue;
+    FIFOQueue<unsigned char *> writeQueue;
 
-        AT_H                       handle;
-        String                     outputPath;
-        int                        frameLimit;
-        int                        imageSize;
-        Thread                     acquireThread;
-        Thread                     processThread;
-        Thread                     writeThread;
-        FIFOQueue<unsigned char*>  processQueue;
-        FIFOQueue<unsigned char*>  writeQueue;
-        
-        bool running = false;
+    bool running = false;
 
-    public:
+public:
 
-        A3C(AT_H handle) {
+    A3C(AT_H handle) {
 
-            this->handle     = handle;
-            this->outputPath = "output.h5";
-            this->frameLimit = -1;
+        this->handle = handle;
+        this->outputPath = "output.h5";
+        this->frameLimit = -1;
 
-            int result = AT_Flush(handle);
+        int result = AT_Flush(handle);
 
-            if (result != AT_SUCCESS) {
-                throw result;
-            }
-
+        if (result != AT_SUCCESS) {
+            throw result;
         }
+    }
 
-        void setFrameLimit(int limit) {
-            this->frameLimit = limit;
-        }
+    void setFrameLimit(int limit) {
+        this->frameLimit = limit;
+    }
 
-        void setOutputPath(string path) {
-            this->outputPath = path;
-        }
+    void setOutputPath(string path) {
+        this->outputPath = path;
+    }
 
-        int getFrameLimit() {
-            return frameLimit;
-        }
+    int getFrameLimit() {
+        return frameLimit;
+    }
 
-        string getOutputPath() {
-            return outputPath;
-        }
+    string getOutputPath() {
+        return outputPath;
+    }
 
-        void start() {
+    void start() {
 
-            running = true;
+        running = true;
 
-            // Clear and reset everything
-            processQueue.clear();
-            writeQueue.clear();
+        // Clear and reset everything
+        processQueue.clear();
+        writeQueue.clear();
 
-            // Start everything going on separate threads
+        // Start everything going on separate threads
 
-            cout << "Starting writing thread... ";
-            writeThread = Thread(&A3C::write, this);
-            cout << "Done." << endl;
+        cout << "Starting writing thread... ";
+        writeThread = Thread(&A3C::write, this);
+        cout << "Done." << endl;
 
-            cout << "Starting processing thread... ";
-            processThread = Thread(&A3C::process, this);
-            cout << "Done." << endl;
+        cout << "Starting processing thread... ";
+        processThread = Thread(&A3C::process, this);
+        cout << "Done." << endl;
 
-            cout << "Starting acquisition thread... ";
-            acquireThread = Thread(&A3C::acquire, this);
-            cout << "Done." << endl;
+        cout << "Starting acquisition thread... ";
+        acquireThread = Thread(&A3C::acquire, this);
+        cout << "Done." << endl;
+    }
 
-        }
+    void stop() {
 
-        void stop() {
+        // Change flag to stop, and wait for all threads to shutdown
+        running = false;
 
-            // Change flag to stop, and wait for all threads to shutdown
-            running = false;
+        cout << "Waiting for acquisition thread to terminate... ";
+        acquireThread.join();
+        cout << "Done." << endl;
 
-            cout << "Waiting for acquisition thread to terminate... ";
-            acquireThread.join();
-            cout << "Done." << endl;
+        cout << "Waiting for processing thread to terminate... ";
+        processThread.join();
+        cout << "Done." << endl;
 
-            cout << "Waiting for processing thread to terminate... ";
-            processThread.join();
-            cout << "Done."<< endl;
+        cout << "Waiting for writing thread to terminate... ";
+        writeThread.join();
+        cout << "Done." << endl;
+    }
 
-            cout << "Waiting for writing thread to terminate... ";
-            writeThread.join();
-            cout << "Done." << endl;
+    int acquire() {
 
-        }
+        AT_64 atSize;
+        unsigned char *pBuffer;
+        int size = 0;
 
-        int acquire() {
+        AT_GetInt(handle, L"ImageSizeBytes", &atSize);
 
-            AT_64          atSize;
-            unsigned char* pBuffer;
-            int            size     = 0;
+        imageSize = (int)atSize;
 
-            AT_GetInt(handle, L"ImageSizeBytes", &atSize);
+        setEnum(handle, "CycleMode", "Continuous");
+        AT_Command(handle, L"AcquisitionStart");
 
-            imageSize = (int) atSize;
+        for (int count = 1; running; count++) {
 
-            AT_SetEnumString(handle, L"CycleMode", L"Continuous");
-            AT_Command(handle, L"AcquisitionStart");
+            // Create new buffer, queue it and await data
+            unsigned char *buffer = new unsigned char[imageSize];
 
-            for (int count = 1; running; count++) {
+            int qCode = AT_QueueBuffer(handle, buffer, imageSize);
+            int wCode = AT_WaitBuffer(handle, &pBuffer, &size, 10000);
 
-                // Create new buffer, queue it and await data
-                unsigned char* buffer = new unsigned char[imageSize];
-
-                int qCode = AT_QueueBuffer(handle, buffer, imageSize);
-                int wCode = AT_WaitBuffer(handle, &pBuffer, &size, 10000);
-
-                if (qCode != AT_SUCCESS || wCode != AT_SUCCESS) {
-                    cout << "ERROR CODES: " << qCode << ", " << wCode << endl;
-                }
-
-                // Push the buffer into the processing queue
-                processQueue.push(pBuffer);
-
-                if (frameLimit > 0 && count >= frameLimit) {
-                    running = false;
-                }
+            if (qCode != AT_SUCCESS || wCode != AT_SUCCESS) {
                 
-            }
+                cerr << "ERROR CODES: " << qCode << ", " << wCode << endl;
 
-            AT_Command(handle, L"AcquisitionStop");
-            AT_Flush(handle);
+                AT_Command(handle, L"AcquisitionStop");
+                AT_Flush(handle);
+                AT_Command(handle, L"AcquisitionStart");
 
-            return 0;
-
-        }
-
-        int process() {
-
-            AT_64 imageHeight;
-            AT_64 imageWidth;
-            AT_64 imageStride;
-
-            AT_GetInt(handle, L"AOI Height", &imageHeight);
-            AT_GetInt(handle, L"AOI Width", &imageWidth);
-            AT_GetInt(handle, L"AOI Stride", &imageStride);
-
-            int size = imageHeight * imageWidth;
-
-            while (running) {
-
-                unsigned char* buffer    = processQueue.pop();
-                unsigned char* converted = new unsigned char[size];
-
-                int k = 0;
-                for (int i = 0; i < imageSize; i+= imageStride) {
-
-                    for (int j = 0; j < imageWidth; j++) {
-
-                        converted[k++] = buffer[i + j];
-
-                    }
-
-                }
-
-                writeQueue.push(converted);
-
-                delete buffer;
+                continue;
 
             }
 
-            return 0;
+            // Push the buffer into the processing queue
+            processQueue.push(pBuffer);
 
+            if (frameLimit > 0 && count >= frameLimit) {
+                running = false;
+            }
         }
 
+        AT_Command(handle, L"AcquisitionStop");
+        AT_Flush(handle);
 
-        int write() {
+        return 0;
+    }
 
-            long start = time(0);
-            double temperature;
+    int process() {
 
-            ofstream output = ofstream(outputPath, ios::binary | ios::out);
+        AT_64 imageHeight;
+        AT_64 imageWidth;
+        AT_64 imageStride;
 
-            for (int count = 1; running; count++) {
+        AT_GetInt(handle, L"AOI Height", &imageHeight);
+        AT_GetInt(handle, L"AOI Width", &imageWidth);
+        AT_GetInt(handle, L"AOI Stride", &imageStride);
 
-                unsigned char* buffer = writeQueue.pop();
+        int size = imageHeight * imageWidth;
 
-                output << buffer;
+        while (running) {
 
-                delete buffer;
+            unsigned char *buffer = processQueue.pop();
+            unsigned char *converted = new unsigned char[size];
 
-                if ((count % 10000) == 0) {
-                    AT_GetFloat(handle, L"SensorTemperature", &temperature);
-                    cout << "FPS = " << count / (time(0) - start) << " Hz" << endl;
-                    cout << "T   = " << temperature << "*C" << endl;
-                }
+            AT_ConvertBuffer(buffer, converted, imageWidth, imageHeight, imageStride, L"Mono12", L"Mono12");
 
+            writeQueue.push(converted);
+
+            delete[] buffer;
+        }
+
+        return 0;
+    }
+
+    int write() {
+
+        long start = time(0);
+        double temperature;
+
+        ofstream output = ofstream(outputPath, ios::binary | ios::out);
+
+        cout << "FPS = ... Hz T = ...*C";
+
+        AT_64 imageHeight;
+        AT_64 imageWidth;
+
+        AT_GetInt(handle, L"AOI Height", &imageHeight);
+        AT_GetInt(handle, L"AOI Width", &imageWidth);
+
+        int frameRate = 2 * (int) getFloat(handle, "FrameRate");
+
+        int size = imageHeight * imageWidth;
+
+        for (int count = 1; running; count++) {
+
+            unsigned char *buffer = writeQueue.pop();
+
+            for (int i = 0; i < size; i++) {
+                output << buffer[i];
             }
 
-            output.close();
+            delete[] buffer;
 
-            return 0;
+            if ((count % frameRate) == 0) {
+                AT_GetFloat(handle, L"SensorTemperature", &temperature);
+                cout << "\r\e[K" << std::flush;
+                cout << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C";
+            }
 
         }
 
+        cout << endl;
+
+        output.close();
+
+        return 0;
+    }
 };
 
 int main() {
@@ -222,13 +415,15 @@ int main() {
 
         cout << "A3Capture testing utility." << endl;
 
-        cout << "Initialising..." << endl;
-
+        cout << "Initialising... ";
         AT_InitialiseLibrary();
+        cout << "Done." << endl;
 
+        cout << "Opening camera... ";
         AT_H handle;
         AT_Open(0, &handle);
-        
+        cout << "Done." << endl;
+
         AT_SetBool(handle, L"SensorCooling", true);
 
         int status = 0;
@@ -249,79 +444,41 @@ int main() {
 
         cout << "Stabilised." << endl;
 
-        int result;
+        setEnum(handle, "AOILayout", "Multitrack");
+        setInt(handle, "MultitrackCount", 1);
+        setInt(handle, "MultitrackSelector", 0);
+        setInt(handle, "MultitrackStart", 1024);
+        setInt(handle, "MultitrackEnd", 1024);
+        setBool(handle, "MultitrackBinned", false);
+        setEnum(handle, "PixelReadoutRate", "270 MHz");
+        setEnum(handle, "TriggerMode", "Internal");
+        setEnum(handle, "ShutterMode", "Open");
+        setEnum(handle, "FanSpeed", "On");
+        setBool(handle, "RollingShutterGlobalClear", false);
+        setEnum(handle, "ElectronicShutteringMode", "Rolling");
+        setBool(handle, "FastAOIFrameRateEnable", true);
+        setBool(handle, "Overlap", true);
+        double minExp = getFloatMin(handle, "ExposureTime");
+        setFloat(handle, "ExposureTime", minExp);
 
-        int enumCount;
-        AT_GetEnumCount(handle, L"PixelReadoutRate", &enumCount);
-
-        for (int i = 0; i < enumCount; i++) {
-            wchar_t chars[1024];
-            AT_GetEnumStringByIndex(handle, L"PixelReadoutRate", i, chars, 1024);
-            int available;
-            int implemented;
-            AT_IsEnumeratedIndexAvailable(handle, L"PixelReadoutRate", i, &available);
-            AT_IsEnumeratedIndexImplemented(handle, L"PixelReadoutRate", i, &implemented);
-            cout << "Option " << i << ": ";
-            wcout << chars;
-            cout << " Impl: " << implemented << " Avail: " << available << endl;
-        }
-
-        result = AT_SetEnumString(handle, L"AOILayout", L"Multitrack");
-        cout << result << endl;
-        result = AT_SetInt(handle, L"MultitrackCount", 1);
-        cout << result << endl;
-        result = AT_SetInt(handle, L"MultitrackSelector", 0);
-        cout << result << endl;
-        result = AT_SetInt(handle, L"MultitrackStart", 1);
-        cout << result << endl;
-        result = AT_SetInt(handle, L"MultitrackEnd", 1);
-        cout << result << endl;
-        result = AT_SetEnumIndex(handle, L"PixelReadoutRate", 3);
-        cout << result << endl;
-        result = AT_SetEnumeratedString(handle, L"ShutterMode", L"Open");
-        cout << result << endl;
-        result = AT_SetEnumeratedString(handle, L"FanSpeed", L"On");
-        cout << result << endl;
-        result = AT_SetEnumeratedString(handle, L"ElectronicShutteringMode", L"Rolling");
-        cout << result << endl;
-        result = AT_SetBool(handle, L"FastAOIFrameRateEnable", true);
-        cout << result << endl;
-        result = AT_SetBool(handle, L"Overlap", true);
-        cout << result << endl;
-
-        AT_SetFloat(handle, L"ExposureTime", 10e-6);
-        cout << result << endl;
-        AT_SetFloat(handle, L"FrameRate", 1900.0);
-        cout << result << endl;
-
-        double rate;
-        AT_GetFloat(handle, L"FrameRate", &rate);
-
-        double exp;
-        AT_GetFloat(handle, L"ExposureTime", &exp);
-
-        double rowTime;
-        AT_GetFloat(handle, L"RowReadTime", &rowTime);
-
-        double readTime;
-        AT_GetFloat(handle, L"ReadoutTime", &readTime);
-
-        double maxRate;
-        AT_GetFloat(handle, L"MaxInterfaceTransferRate", &maxRate);
-
-        int mode;
-        AT_GetEnumIndex(handle, L"PixelReadoutRate", &mode);
-
-        AT_64 accCount;
-        AT_GetInt(handle, L"AccumulateCount", &accCount);
+        double rate     = getFloat(handle, "FrameRate");
+        double exp      = getFloat(handle, "ExposureTime");
+        double rowTime  = getFloat(handle, "RowReadTime");
+        double readTime = getFloat(handle, "ReadoutTime");
+        double maxRate  = getFloat(handle, "MaxInterfaceTransferRate");
+        String mode     = getEnum(handle, "PixelReadoutRate");
+        String shutter  = getEnum(handle, "ElectronicShutteringMode");
+        long   accCount = getInt(handle, "AccumulateCount");
 
         cout << "Frame Rate: " << rate << " Hz" << endl;
         cout << "Max Frame Rate: " << maxRate << " Hz" << endl;
         cout << "Exposure Time: " << exp << " s" << endl;
+        cout << "Min Exposure Time: " << minExp << " s" << endl;
         cout << "Accumulate Count: " << accCount << endl;
         cout << "Row Read Time: " << rowTime << " s" << endl;
         cout << "Readout Time: " << rowTime << " s" << endl;
         cout << "Readout Rate: " << mode << endl;
+        cout << "Shuttering Mode: " << shutter << endl;
 
         A3C capture = A3C(handle);
 
@@ -330,13 +487,11 @@ int main() {
         cout << "Ready, press enter to start..." << endl;
         cin.ignore();
 
-        cout << "Starting threads... " << endl;
         capture.start();
 
         cout << "Capturing, press enter to stop..." << endl;
         cin.ignore();
 
-        cout << "Stopping threads... " << endl;
         capture.stop();
 
         AT_Close(handle);
@@ -345,14 +500,12 @@ int main() {
 
         return 0;
 
-    } catch (int e) {
+    } catch (String e) {
 
-        cout << "Error encountered. Error Code: " << e <<  "." << endl;
+        cerr << "Error encountered. Error Code: " << e << "." << endl;
 
         AT_FinaliseLibrary();
-        
-        return e;
 
+        return 1;
     }
-
 }
