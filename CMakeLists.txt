@@ -9,7 +9,8 @@ project(Andor3Capture)
 set(CMAKE_CXX_STANDARD 17)           
 
 include_directories(include ${CMAKE_CURRENT_LIST_DIR})
-include_directories(/usr/include/python3.11 /usr/include/python3.11)
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
 
 add_executable(Andor3Capture main.cpp)
 target_link_libraries(Andor3Capture ${CMAKE_CURRENT_LIST_DIR}/libatcore.so.3.10.30003.5)
