@@ -1,5 +1,0 @@
-/home/william/IdeaProjects/Andor3Capture/build/CMakeFiles/Andor3Capture.dir
-/home/william/IdeaProjects/Andor3Capture/build/CMakeFiles/PyAndor3Capture.dir
-/home/william/IdeaProjects/Andor3Capture/build/CMakeFiles/PyAndor3Capture_swig_compilation.dir
-/home/william/IdeaProjects/Andor3Capture/build/CMakeFiles/edit_cache.dir
-/home/william/IdeaProjects/Andor3Capture/build/CMakeFiles/rebuild_cache.dir
