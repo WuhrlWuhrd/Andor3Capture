@@ -29,16 +29,18 @@ int main() {
 
             cout << endl << "===================" << endl;
             cout         << " CONNECTED CAMERAS "  << endl;
-            cout         << "===================" << endl << endl;
+            cout         << "===================" << endl;
    
             for (int i = 0; i < devices; i++) {
+
+                cout << i << ": Loading...";
 
                 AT_H handle = open(i);
 
                 String model = getString(handle, "CameraModel");
                 String name  = getString(handle, "CameraName");
 
-                cout << "0: " << name << " (" << model << ")" << endl;
+                cout << "\r\e[K" << std::flush << i << ": " << name << " (" << model << ")" << endl;
 
                 AT_Close(handle);
 
@@ -64,7 +66,7 @@ int main() {
 
         cout << "Waiting for temperature to stabilise... " << endl;
 
-        while (status != 1) {
+        while (false && status != 1) {
 
             status      = getEnumInt(handle, "Temperature Status");
             temperature = getFloat(handle, "SensorTemperature");
@@ -117,14 +119,16 @@ int main() {
 
         capture.setOutputPath("D:\\Paul\\data.bin");
 
+        cin.clear();
         cout << "Ready, press enter to start..." << endl;
         cin.ignore();
 
         capture.start();
 
+        cin.clear();
         cout << "Capturing, press enter to stop..." << endl;
         cin.ignore();
-
+    
         capture.stop();
 
         AT_Close(handle);

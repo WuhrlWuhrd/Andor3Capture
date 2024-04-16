@@ -201,7 +201,7 @@ public:
             if ((count % frameRate) == 0) {
                 temperature = getFloat(handle, "SensorTemperature");
                 cout << "\r\e[K" << std::flush;
-                cout << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C, " << "Write queue length = " << writeQueue.size();
+                cout << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
             }
 
         }
