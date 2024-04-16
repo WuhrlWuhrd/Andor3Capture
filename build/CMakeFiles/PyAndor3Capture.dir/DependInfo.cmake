@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/william/IdeaProjects/Andor3Capture/main.cpp" "CMakeFiles/Andor3Capture.dir/main.cpp.o" "gcc" "CMakeFiles/Andor3Capture.dir/main.cpp.o.d"
+  "/home/william/IdeaProjects/Andor3Capture/build/PyAndor3Capture/A3CPYTHON_wrap.cxx" "CMakeFiles/PyAndor3Capture.dir/PyAndor3Capture/A3CPYTHON_wrap.cxx.o" "gcc" "CMakeFiles/PyAndor3Capture.dir/PyAndor3Capture/A3CPYTHON_wrap.cxx.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

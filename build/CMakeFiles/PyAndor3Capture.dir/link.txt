@@ -1,0 +1,1 @@
+/usr/bin/g++-11 -fPIC -g -shared  -o PyAndor3Capture/_PyAndor3Capture.so CMakeFiles/PyAndor3Capture.dir/PyAndor3Capture/A3CPYTHON_wrap.cxx.o  -Wl,-rpath,/home/william/IdeaProjects/Andor3Capture /home/william/IdeaProjects/Andor3Capture/libatcore.so.3.10.30003.5 

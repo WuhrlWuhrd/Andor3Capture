@@ -1,0 +1,87 @@
+{
+	"backtrace" : 3,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"swig_add_library",
+			"swig_add_module"
+		],
+		"files" : 
+		[
+			"/home/william/.local/lib/python3.11/site-packages/cmake/data/share/cmake-3.27/Modules/UseSWIG.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 25,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 769,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 945,
+				"parent" : 2
+			}
+		]
+	},
+	"id" : "PyAndor3Capture_swig_compilation::@6890427a1f51a3e7e1df",
+	"name" : "PyAndor3Capture_swig_compilation",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				0,
+				2
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				1
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 3,
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/PyAndor3Capture_swig_compilation",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/PyAndor3Capture_swig_compilation.rule",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"path" : "A3C.i",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "UTILITY"
+}

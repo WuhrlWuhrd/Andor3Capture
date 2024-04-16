@@ -2,7 +2,6 @@
 #include <deque>
 #include "semaphore.cpp"
 
-#define Mutex mutex
 #define Deque deque
 
 using namespace std;
@@ -48,5 +47,8 @@ template<typename T> class FIFOQueue {
             lock.unlock();
 
         }
-        
+
+        int size() {
+            return queue.size();
+        }
 };
