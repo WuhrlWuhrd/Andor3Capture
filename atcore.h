@@ -17,7 +17,7 @@ typedef wchar_t AT_WC;
 #include <windows.h>
 #define AT_EXP_CONV WINAPI
 #else
-#define AT_EXP_CONV  __attribute__ ((visibility ("default")))
+#define AT_EXP_CONV  __attribute__ (())
 #endif
 
 #define AT_INFINITE 0xFFFFFFFF
@@ -85,7 +85,7 @@ extern "C" {
  int AT_EXP_CONV AT_OpenDevice(const AT_WC* Device, AT_H *Hndl);
  int AT_EXP_CONV AT_Close(AT_H Hndl);
 
-typedef int (AT_EXP_CONV *FeatureCallback)(AT_H Hndl, const AT_WC* Feature, void* Context);
+ typedef int (AT_EXP_CONV *FeatureCallback)(AT_H Hndl, const AT_WC* Feature, void* Context);
  int AT_EXP_CONV AT_RegisterFeatureCallback(AT_H Hndl, const AT_WC* Feature, FeatureCallback EvCallback, void* Context);
  int AT_EXP_CONV AT_UnregisterFeatureCallback(AT_H Hndl, const AT_WC* Feature, FeatureCallback EvCallback, void* Context);
 

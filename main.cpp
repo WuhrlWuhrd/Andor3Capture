@@ -18,6 +18,7 @@ int main() {
 
         if (devices == 0) {
             cout << "Exiting." << endl;
+            AT_FinaliseLibrary();
             return 0;
         }
 
@@ -28,7 +29,7 @@ int main() {
             index = -1;
 
             cout << endl << "===================" << endl;
-            cout         << " CONNECTED CAMERAS "  << endl;
+            cout         << " CONNECTED CAMERAS " << endl;
             cout         << "===================" << endl;
    
             for (int i = 0; i < devices; i++) {
@@ -64,20 +65,32 @@ int main() {
         int status = 0;
         double temperature;
 
-        cout << "Waiting for temperature to stabilise... " << endl;
+        cout << "Stabilise temperature? [y/n] ";
 
-        while (false && status != 1) {
+        string response = "";
 
-            status      = getEnumInt(handle, "Temperature Status");
-            temperature = getFloat(handle, "SensorTemperature");
-
-            cout << "\r\e[K" << std::flush << "T = " << temperature << "*C";
-
-            this_thread::sleep_for(chrono::milliseconds(1000));
-
+        while (response != "y" && response != "n") {
+            cin >> response;
         }
 
-        cout << "Stabilised." << endl;
+        if (response == "y") {
+
+            cout << "Waiting for temperature to stabilise... " << endl;
+
+            while (false && status != 1) {
+
+                status      = getEnumInt(handle, "Temperature Status");
+                temperature = getFloat(handle, "SensorTemperature");
+
+                cout << "\r\e[K" << std::flush << "T = " << temperature << "*C";
+
+                this_thread::sleep_for(chrono::milliseconds(1000));
+
+            }
+
+            cout << "Stabilised." << endl;
+
+        }
 
         setEnum(handle, "AOILayout", "Multitrack");
         setInt(handle, "MultitrackCount", 1);

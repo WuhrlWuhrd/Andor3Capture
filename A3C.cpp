@@ -20,6 +20,7 @@ private:
     Thread writeThread;
     FIFOQueue<unsigned char *> processQueue;
     FIFOQueue<unsigned char *> writeQueue;
+    ostream* out = &cout;
 
     bool running = false;
 
@@ -36,6 +37,11 @@ public:
         if (result != AT_SUCCESS) {
             throw result;
         }
+        
+    }
+
+    void setVerbose(bool flag) {
+        this->out = flag ? &cout : new ostream(0);
     }
 
     void setFrameLimit(int limit) {
@@ -64,17 +70,18 @@ public:
 
         // Start everything going on separate threads
 
-        cout << "Starting writing thread... ";
+        *out << "Starting writing thread... ";
         writeThread = Thread(&A3C::write, this);
-        cout << "Done." << endl;
+        *out << "Done." << endl;
 
-        cout << "Starting processing thread... ";
+        *out << "Starting processing thread... ";
         processThread = Thread(&A3C::process, this);
-        cout << "Done." << endl;
+        *out << "Done." << endl;
 
-        cout << "Starting acquisition thread... ";
+        *out << "Starting acquisition thread... ";
         acquireThread = Thread(&A3C::acquire, this);
-        cout << "Done." << endl;
+        *out << "Done." << endl;
+
     }
 
     void stop() {
@@ -82,17 +89,17 @@ public:
         // Change flag to stop, and wait for all threads to shutdown
         running = false;
 
-        cout << "Waiting for acquisition thread to terminate... ";
+        *out << "Waiting for acquisition thread to terminate... ";
         acquireThread.join();
-        cout << "Done." << endl;
+        *out << "Done." << endl;
 
-        cout << "Waiting for processing thread to terminate... ";
+        *out << "Waiting for processing thread to terminate... ";
         processThread.join();
-        cout << "Done." << endl;
+        *out << "Done." << endl;
 
-        cout << "Waiting for writing thread to terminate... ";
+        *out << "Waiting for writing thread to terminate... ";
         writeThread.join();
-        cout << "Done." << endl;
+        *out << "Done." << endl;
     }
 
     int acquire() {
@@ -176,7 +183,7 @@ public:
 
         ofstream output = ofstream(outputPath, ios::binary | ios::out);
 
-        cout << "FPS = ... Hz T = ...*C";
+        *out << "FPS = ... Hz, T = ...*C, PQ = ..., WQ = ...";
 
         AT_64 imageHeight;
         AT_64 imageWidth;
@@ -200,16 +207,17 @@ public:
 
             if ((count % frameRate) == 0) {
                 temperature = getFloat(handle, "SensorTemperature");
-                cout << "\r\e[K" << std::flush;
-                cout << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
+                *out << "\r\e[K" << std::flush;
+                *out << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
             }
 
         }
 
-        cout << endl;
+        *out << endl;
 
         output.close();
 
         return 0;
     }
+    
 };
