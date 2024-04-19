@@ -124,7 +124,7 @@ int main() {
         cout << "Min Exposure Time: " << minExp << " s" << endl;
         cout << "Accumulate Count: " << accCount << endl;
         cout << "Row Read Time: " << rowTime << " s" << endl;
-        cout << "Readout Time: " << rowTime << " s" << endl;
+        cout << "Readout Time: " << readTime << " s" << endl;
         cout << "Readout Rate: " << mode << endl;
         cout << "Shuttering Mode: " << shutter << endl;
 

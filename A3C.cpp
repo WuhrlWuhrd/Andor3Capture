@@ -181,6 +181,8 @@ public:
         long start = time(0);
         double temperature;
 
+        remove(outputPath.c_str());
+
         ofstream output = ofstream(outputPath, ios::binary | ios::out);
 
         *out << "FPS = ... Hz, T = ...*C, PQ = ..., WQ = ...";
