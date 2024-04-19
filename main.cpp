@@ -95,7 +95,7 @@ int main() {
         setEnum(handle, "AOILayout", "Multitrack");
         setInt(handle, "MultitrackCount", 1);
         setInt(handle, "MultitrackSelector", 0);
-        setInt(handle, "MultitrackStart", 1024);
+        setInt(handle, "MultitrackStart", 1);
         setInt(handle, "MultitrackEnd", 1024);
         setBool(handle, "MultitrackBinned", false);
         setEnum(handle, "PixelReadoutRate", "270 MHz");
@@ -104,7 +104,7 @@ int main() {
         setEnum(handle, "FanSpeed", "On");
         setBool(handle, "RollingShutterGlobalClear", false);
         setEnum(handle, "ElectronicShutteringMode", "Rolling");
-        setBool(handle, "FastAOIFrameRateEnable", true);
+        setBool(handle, "FastAOIFrameRateEnable", false);
         setBool(handle, "Overlap", true);
         double minExp = getFloatMin(handle, "ExposureTime");
         setFloat(handle, "ExposureTime", minExp);
@@ -124,7 +124,7 @@ int main() {
         cout << "Min Exposure Time: " << minExp << " s" << endl;
         cout << "Accumulate Count: " << accCount << endl;
         cout << "Row Read Time: " << rowTime << " s" << endl;
-        cout << "Readout Time: " << rowTime << " s" << endl;
+        cout << "Readout Time: " << readTime << " s" << endl;
         cout << "Readout Rate: " << mode << endl;
         cout << "Shuttering Mode: " << shutter << endl;
 

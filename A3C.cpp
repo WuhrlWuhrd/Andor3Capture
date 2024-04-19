@@ -93,9 +93,13 @@ public:
         acquireThread.join();
         *out << "Done." << endl;
 
+        processQueue.push(nullptr);
+
         *out << "Waiting for processing thread to terminate... ";
         processThread.join();
         *out << "Done." << endl;
+
+        writeQueue.push(nullptr);
 
         *out << "Waiting for writing thread to terminate... ";
         writeThread.join();
@@ -103,6 +107,10 @@ public:
     }
 
     int acquire() {
+
+        long start = time(0);
+        double temperature;
+        int frameRate = 2 * (int) getFloat(handle, "FrameRate");
 
         AT_64 atSize;
         unsigned char *pBuffer;
@@ -138,6 +146,12 @@ public:
             // Push the buffer into the processing queue
             processQueue.push(pBuffer);
 
+            if ((count % frameRate) == 0) {
+                temperature = getFloat(handle, "SensorTemperature");
+                *out << "\r\e[K" << std::flush;
+                *out << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
+            }
+
             if (frameLimit > 0 && count >= frameLimit) {
                 running = false;
             }
@@ -164,6 +178,11 @@ public:
         while (running) {
 
             unsigned char *buffer = processQueue.pop();
+
+            if (buffer == nullptr) {
+                continue;
+            }
+            
             unsigned char *converted = new unsigned char[size];
 
             AT_ConvertBuffer(buffer, converted, imageWidth, imageHeight, imageStride, L"Mono12", L"Mono12");
@@ -178,9 +197,6 @@ public:
 
     int write() {
 
-        long start = time(0);
-        double temperature;
-
         ofstream output = ofstream(outputPath, ios::binary | ios::out);
 
         *out << "FPS = ... Hz, T = ...*C, PQ = ..., WQ = ...";
@@ -191,25 +207,21 @@ public:
         AT_GetInt(handle, L"AOI Height", &imageHeight);
         AT_GetInt(handle, L"AOI Width", &imageWidth);
 
-        int frameRate = 2 * (int) getFloat(handle, "FrameRate");
-
         int size = imageHeight * imageWidth;
 
         for (int count = 1; running; count++) {
 
             unsigned char *buffer = writeQueue.pop();
 
+            if (buffer == nullptr) {
+                continue;
+            }
+
             for (int i = 0; i < size; i++) {
                 output << buffer[i];
             }
 
             delete[] buffer;
-
-            if ((count % frameRate) == 0) {
-                temperature = getFloat(handle, "SensorTemperature");
-                *out << "\r\e[K" << std::flush;
-                *out << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
-            }
 
         }
 
