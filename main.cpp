@@ -95,7 +95,7 @@ int main() {
         }
 
 
-        setEnum(handle, "AOILayout", "Image");
+        setEnum(handle, "AOILayout", "Multitrack");
         setInt(handle, "MultitrackCount", 1);
         setInt(handle, "MultitrackSelector", 0);
         setInt(handle, "MultitrackStart", 1);
@@ -107,14 +107,13 @@ int main() {
         setEnum(handle, "FanSpeed", "On");
         setBool(handle, "RollingShutterGlobalClear", false);
         setEnum(handle, "ElectronicShutteringMode", "Rolling");
-        setEnum(handle, "SimplePreAmpGainControl", "16-bit (low noise & high well capacity)");
         setBool(handle, "FastAOIFrameRateEnable", true);
         setBool(handle, "Overlap", true);
         setBool(handle, "VerticallyCentreAOI", true);
         double minExp = getFloatMin(handle, "ExposureTime");
         double maxRate = getFloat(handle, "MaxInterfaceTransferRate");
         double minTime = 1.0/maxRate;
-        setFloat(handle, "ExposureTime", minTime > minExp ? minTime : minExp);
+        setFloat(handle, "ExposureTime", minTime > minExp ? minExp : minExp);
 
         cout << getIntMin(handle, "AOIHeight") << endl;
 

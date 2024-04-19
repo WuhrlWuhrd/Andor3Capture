@@ -114,7 +114,7 @@ public:
         float  frameRate  = getFloat(handle, "FrameRate");
         float  frameTime  = 1.0 / frameRate;
         int    frameCount = (int) frameRate;
-        long   timeOut    = 500;
+        long   timeOut    = (long) (1000.0 * 2.0 * frameTime);
 
         AT_64 atSize;
         unsigned char *pBuffer;
@@ -133,11 +133,11 @@ public:
             unsigned char *buffer = new unsigned char[imageSize];
 
             int qCode = AT_QueueBuffer(handle, buffer, imageSize);
-            int wCode = AT_WaitBuffer(handle, &pBuffer, &size, timeOut);
+            int wCode = AT_WaitBuffer(handle, &pBuffer, &size, timeOut > 500 ? timeOut : 500);
 
             if (qCode != AT_SUCCESS || wCode != AT_SUCCESS) {
                 
-                cerr << endl << "TIMEOUT: " << qCode << ", " << wCode << ", RESTARTING ACQUISITION" << endl;
+                cerr << endl << endl << "DROPPED FRAME: RESTARTING ACQUISITION" << endl;
 
                 AT_Command(handle, L"AcquisitionStop");
                 AT_Flush(handle);
@@ -236,14 +236,12 @@ public:
             if (!running && writeQueue.hasWaiting()) {
 
                 if (!stopped) {
-                    queued = writeQueue.size();
-                    *out << endl << "Writing " << queued << " remaining queued acquisitions to disk...";
+                    queued  = writeQueue.size();
                     stopped = true;
                 }
 
                 if ((count % (queued / 10)) == 0) {
-                    *out << "\r\e[K" << std::flush;
-                    *out << "Writing " << writeQueue.size() << " remaining queued acquisitions to disk...";
+                    *out << "\r\e[K" << std::flush << "Writing " << writeQueue.size() << " remaining queued acquisitions to disk...";
                 }
 
             }
