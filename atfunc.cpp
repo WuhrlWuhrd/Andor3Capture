@@ -58,6 +58,20 @@ void setInt(AT_H handle, String feature, long value) {
 
 }
 
+long getIntMin(AT_H handle, String feature) {
+
+    AT_64 value;
+    int result = AT_GetIntMin(handle, stringToWC(feature), &value);
+
+    if (result != AT_SUCCESS) {
+        ostringstream oss;
+        oss << feature << ": " << result;
+        throw oss.str();
+    }
+
+    return value;
+}
+
 bool getBool(AT_H handle, String feature) {
 
     AT_BOOL value;

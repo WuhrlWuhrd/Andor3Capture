@@ -11,6 +11,7 @@ using namespace std;
 class A3C {
 
 private:
+
     AT_H handle;
     String outputPath;
     int frameLimit;
@@ -108,9 +109,12 @@ public:
 
     int acquire() {
 
-        long start = time(0);
+        long   start = time(0);
         double temperature;
-        int frameRate = 2 * (int) getFloat(handle, "FrameRate");
+        float  frameRate  = getFloat(handle, "FrameRate");
+        float  frameTime  = 1.0 / frameRate;
+        int    frameCount = (int) frameRate;
+        long   timeOut    = 500;
 
         AT_64 atSize;
         unsigned char *pBuffer;
@@ -129,11 +133,11 @@ public:
             unsigned char *buffer = new unsigned char[imageSize];
 
             int qCode = AT_QueueBuffer(handle, buffer, imageSize);
-            int wCode = AT_WaitBuffer(handle, &pBuffer, &size, 10000);
+            int wCode = AT_WaitBuffer(handle, &pBuffer, &size, timeOut);
 
             if (qCode != AT_SUCCESS || wCode != AT_SUCCESS) {
                 
-                cerr << "ERROR CODES: " << qCode << ", " << wCode << endl;
+                cerr << endl << "TIMEOUT: " << qCode << ", " << wCode << ", RESTARTING ACQUISITION" << endl;
 
                 AT_Command(handle, L"AcquisitionStop");
                 AT_Flush(handle);
@@ -146,7 +150,7 @@ public:
             // Push the buffer into the processing queue
             processQueue.push(pBuffer);
 
-            if ((count % frameRate) == 0) {
+            if ((count % frameCount) == 0) {
                 temperature = getFloat(handle, "SensorTemperature");
                 *out << "\r\e[K" << std::flush;
                 *out << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
@@ -155,6 +159,7 @@ public:
             if (frameLimit > 0 && count >= frameLimit) {
                 running = false;
             }
+
         }
 
         AT_Command(handle, L"AcquisitionStop");
@@ -175,7 +180,7 @@ public:
 
         int size = imageHeight * imageWidth;
 
-        while (running) {
+        while (running || processQueue.hasWaiting()) {
 
             unsigned char *buffer = processQueue.pop();
 
@@ -199,6 +204,8 @@ public:
 
         long start = time(0);
         double temperature;
+        bool stopped = false;
+        int queued = 0;
 
         remove(outputPath.c_str());
 
@@ -214,7 +221,7 @@ public:
 
         int size = imageHeight * imageWidth;
 
-        for (int count = 1; running; count++) {
+        for (int count = 1; running || writeQueue.hasWaiting(); count++) {
 
             unsigned char *buffer = writeQueue.pop();
 
@@ -224,6 +231,21 @@ public:
 
             for (int i = 0; i < size; i++) {
                 output << buffer[i];
+            }
+
+            if (!running && writeQueue.hasWaiting()) {
+
+                if (!stopped) {
+                    queued = writeQueue.size();
+                    *out << endl << "Writing " << queued << " remaining queued acquisitions to disk...";
+                    stopped = true;
+                }
+
+                if ((count % (queued / 10)) == 0) {
+                    *out << "\r\e[K" << std::flush;
+                    *out << "Writing " << writeQueue.size() << " remaining queued acquisitions to disk...";
+                }
+
             }
 
             delete[] buffer;

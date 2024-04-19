@@ -13,6 +13,7 @@ template<typename T> class FIFOQueue {
         Mutex     lock;
         Semaphore gate;
         Deque<T>  queue;
+        int count = 0;
 
     public:
 
@@ -20,6 +21,7 @@ template<typename T> class FIFOQueue {
 
             lock.lock();
             queue.push_back(toPush);
+            count++;
             lock.unlock();
             gate.release();
 
@@ -33,6 +35,7 @@ template<typename T> class FIFOQueue {
 
             lock.lock();
             queue.pop_front();
+            count--;
             lock.unlock();
 
             return item;
@@ -43,13 +46,18 @@ template<typename T> class FIFOQueue {
 
             lock.lock();
             queue.clear();
+            count = 0;
             gate.reset();
             lock.unlock();
 
         }
 
         int size() {
-            return queue.size();
+            return count;
+        }
+
+        bool hasWaiting() {
+            return count > 0;
         }
         
 };

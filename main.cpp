@@ -54,7 +54,7 @@ int main() {
 
         }
 
-
+        cin.get();
 
         cout << "Opening camera... ";
         AT_H handle = open(index);
@@ -72,6 +72,8 @@ int main() {
         while (response != "y" && response != "n") {
             cin >> response;
         }
+
+        cin.get();
 
         if (response == "y") {
 
@@ -92,11 +94,12 @@ int main() {
 
         }
 
-        setEnum(handle, "AOILayout", "Multitrack");
+
+        setEnum(handle, "AOILayout", "Image");
         setInt(handle, "MultitrackCount", 1);
         setInt(handle, "MultitrackSelector", 0);
         setInt(handle, "MultitrackStart", 1);
-        setInt(handle, "MultitrackEnd", 1024);
+        setInt(handle, "MultitrackEnd", 5);
         setBool(handle, "MultitrackBinned", false);
         setEnum(handle, "PixelReadoutRate", "270 MHz");
         setEnum(handle, "TriggerMode", "Internal");
@@ -104,44 +107,53 @@ int main() {
         setEnum(handle, "FanSpeed", "On");
         setBool(handle, "RollingShutterGlobalClear", false);
         setEnum(handle, "ElectronicShutteringMode", "Rolling");
-        setBool(handle, "FastAOIFrameRateEnable", false);
+        setEnum(handle, "SimplePreAmpGainControl", "16-bit (low noise & high well capacity)");
+        setBool(handle, "FastAOIFrameRateEnable", true);
         setBool(handle, "Overlap", true);
+        setBool(handle, "VerticallyCentreAOI", true);
         double minExp = getFloatMin(handle, "ExposureTime");
-        setFloat(handle, "ExposureTime", minExp);
+        double maxRate = getFloat(handle, "MaxInterfaceTransferRate");
+        double minTime = 1.0/maxRate;
+        setFloat(handle, "ExposureTime", minTime > minExp ? minTime : minExp);
 
-        double rate     = getFloat(handle, "FrameRate");
-        double exp      = getFloat(handle, "ExposureTime");
-        double rowTime  = getFloat(handle, "RowReadTime");
-        double readTime = getFloat(handle, "ReadoutTime");
-        double maxRate  = getFloat(handle, "MaxInterfaceTransferRate");
-        String mode     = getEnum(handle, "PixelReadoutRate");
-        String shutter  = getEnum(handle, "ElectronicShutteringMode");
-        long   accCount = getInt(handle, "AccumulateCount");
+        cout << getIntMin(handle, "AOIHeight") << endl;
 
-        cout << "Frame Rate: " << rate << " Hz" << endl;
-        cout << "Max Frame Rate: " << maxRate << " Hz" << endl;
-        cout << "Exposure Time: " << exp << " s" << endl;
-        cout << "Min Exposure Time: " << minExp << " s" << endl;
-        cout << "Accumulate Count: " << accCount << endl;
-        cout << "Row Read Time: " << rowTime << " s" << endl;
-        cout << "Readout Time: " << readTime << " s" << endl;
-        cout << "Readout Rate: " << mode << endl;
-        cout << "Shuttering Mode: " << shutter << endl;
+        double rate        = getFloat(handle, "FrameRate");
+        double exp         = getFloat(handle, "ExposureTime");
+        double minRowTime  = getFloatMin(handle, "RowReadTime");
+        double rowTime     = getFloat(handle, "RowReadTime");
+        double readTime    = getFloat(handle, "ReadoutTime");
+        double transition  = getFloat(handle, "LongExposureTransition");
+        String mode        = getEnum(handle, "PixelReadoutRate");
+        String shutter     = getEnum(handle, "ElectronicShutteringMode");
+        long   accCount    = getInt(handle, "AccumulateCount");
+
+        cout << "Frame Rate: "          << rate       << " Hz" << endl;
+        cout << "Max Frame Rate: "      << maxRate    << " Hz" << endl;
+        cout << "Exposure Time: "       << exp        << " s"  << endl;
+        cout << "Min Exposure Time: "   << minExp     << " s"  << endl;
+        cout << "Accumulate Count: "    << accCount            << endl;
+        cout << "Min Row Read Time: "   << minRowTime << " s"  << endl;
+        cout << "Row Read Time: "       << rowTime    << " s"  << endl;
+        cout << "Readout Time: "        << readTime   << " s"  << endl;
+        cout << "Readout Rate: "        << mode                << endl;
+        cout << "Exposure Transition: " << transition << " s"  << endl;
+        cout << "Shuttering Mode: "     << shutter             << endl;
 
         A3C capture = A3C(handle);
 
-        capture.setOutputPath("D:\\Paul\\data.bin");
+        capture.setOutputPath("C:\\Users\\HERA\\Desktop\\data.bin");
 
-        cin.clear();
         cout << "Ready, press enter to start..." << endl;
         cin.ignore();
 
         capture.start();
 
-        cin.clear();
         cout << "Capturing, press enter to stop..." << endl;
         cin.ignore();
-    
+
+        cout << "Stopping threads..." << endl;
+
         capture.stop();
 
         AT_Close(handle);
