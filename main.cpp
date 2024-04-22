@@ -37,7 +37,7 @@ int main() {
 
             for (int i = 0; i < devices; i++) {
 
-                cout << i << ": Loading...";
+                cout << i << ": Reading camera information...";
 
                 handles[i] = open(i);
 
@@ -92,7 +92,7 @@ int main() {
 
             while (false && status != 1) {
 
-                status      = getEnumInt(handle, "Temperature Status");
+                status      = getEnumInt(handle, "TemperatureStatus");
                 temperature = getFloat(handle, "SensorTemperature");
 
                 cout << "\r\e[K" << std::flush << "T = " << temperature << "*C";
