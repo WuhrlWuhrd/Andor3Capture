@@ -3,10 +3,12 @@
 #include <ctime>
 #include <fstream>
 #include <thread>
+#include <vector>
 
 using namespace std;
 
 #define Thread thread
+#define Vector vector
 
 class A3C {
 
@@ -19,17 +21,23 @@ private:
     Thread acquireThread;
     Thread processThread;
     Thread writeThread;
+    Thread monitorThread;
     FIFOQueue<unsigned char *> processQueue;
     FIFOQueue<unsigned char *> writeQueue;
-    ostream* out = &cout;
+    Vector<String> errors;
+    ostream *out = &cout;
+    bool running    = false;
+    bool monitoring = false;
 
-    bool running = false;
+    long acquireCount = 0;
+    long processCount = 0;
+    long writeCount   = 0;
 
 public:
 
     A3C(AT_H handle) {
 
-        this->handle = handle;
+        this->handle     = handle;
         this->outputPath = "output.h5";
         this->frameLimit = -1;
 
@@ -63,7 +71,8 @@ public:
 
     void start() {
 
-        running = true;
+        running    = true;
+        monitoring = true;
 
         // Clear and reset everything
         processQueue.clear();
@@ -83,28 +92,27 @@ public:
         acquireThread = Thread(&A3C::acquire, this);
         *out << "Done." << endl;
 
+        *out << "Starting monitoring thread... ";
+        monitorThread = Thread(&A3C::monitor, this);
+        *out << "Done." << endl;
+        
     }
 
     void stop() {
 
         // Change flag to stop, and wait for all threads to shutdown
         running = false;
-
-        *out << "Waiting for acquisition thread to terminate... ";
         acquireThread.join();
-        *out << "Done." << endl;
 
         processQueue.push(nullptr);
-
-        *out << "Waiting for processing thread to terminate... ";
         processThread.join();
-        *out << "Done." << endl;
 
         writeQueue.push(nullptr);
-
-        *out << "Waiting for writing thread to terminate... ";
         writeThread.join();
-        *out << "Done." << endl;
+
+        monitoring = false;
+        monitorThread.join();
+
     }
 
     int acquire() {
@@ -127,7 +135,7 @@ public:
         setEnum(handle, "CycleMode", "Continuous");
         AT_Command(handle, L"AcquisitionStart");
 
-        for (int count = 1; running; count++) {
+        for (acquireCount = 0; running; acquireCount++) {
 
             // Create new buffer, queue it and await data
             unsigned char *buffer = new unsigned char[imageSize];
@@ -139,6 +147,8 @@ public:
                 
                 cerr << endl << endl << "DROPPED FRAME: RESTARTING ACQUISITION" << endl;
 
+                errors.push_back("Error (" + to_string(qCode) + ", " + to_string(wCode) + "), restarting acquisition.");
+
                 AT_Command(handle, L"AcquisitionStop");
                 AT_Flush(handle);
                 AT_Command(handle, L"AcquisitionStart");
@@ -149,16 +159,6 @@ public:
 
             // Push the buffer into the processing queue
             processQueue.push(pBuffer);
-
-            if ((count % frameCount) == 0) {
-                temperature = getFloat(handle, "SensorTemperature");
-                *out << "\r\e[K" << std::flush;
-                *out << "FPS = " << count / (time(0) - start) << " Hz" << ", T = " << temperature << "*C" << ", PQ = " << processQueue.size() << ", WQ = " << writeQueue.size();
-            }
-
-            if (frameLimit > 0 && count >= frameLimit) {
-                running = false;
-            }
 
         }
 
@@ -180,7 +180,7 @@ public:
 
         int size = imageHeight * imageWidth;
 
-        while (running || processQueue.hasWaiting()) {
+        for (processCount = 0; running || processQueue.hasWaiting(); processCount++) {
 
             unsigned char *buffer = processQueue.pop();
 
@@ -198,6 +198,7 @@ public:
         }
 
         return 0;
+
     }
 
     int write() {
@@ -221,7 +222,7 @@ public:
 
         int size = imageHeight * imageWidth;
 
-        for (int count = 1; running || writeQueue.hasWaiting(); count++) {
+        for (writeCount = 0; running || writeQueue.hasWaiting(); writeCount++) {
 
             unsigned char *buffer = writeQueue.pop();
 
@@ -233,19 +234,6 @@ public:
                 output << buffer[i];
             }
 
-            if (!running && writeQueue.hasWaiting()) {
-
-                if (!stopped) {
-                    queued  = writeQueue.size();
-                    stopped = true;
-                }
-
-                if ((count % (queued / 10)) == 0) {
-                    *out << "\r\e[K" << std::flush << "Writing " << writeQueue.size() << " remaining queued acquisitions to disk...";
-                }
-
-            }
-
             delete[] buffer;
 
         }
@@ -255,6 +243,60 @@ public:
         output.close();
 
         return 0;
+    }
+
+    int monitor() {
+
+        long start = time(0);
+
+        this_thread::sleep_for(chrono::seconds(1));
+
+        *out << "...";
+
+        while (monitoring) {
+
+            if (running) {
+
+                long   duration = time(0) - start;
+                double aRate    = acquireCount / duration;
+                double pRate    = processCount / duration;
+                double wRate    = writeCount / duration;
+                double temp     = getFloat(handle, "SensorTemperature");
+                int    pQueue   = processQueue.size();
+                int    wQueue   = writeQueue.size();
+
+                *out << "\r\e[K"
+                    << "A = " << aRate << " Hz, P = " << pRate << " Hz, "
+                    << ", W = " << wRate << " Hz, PQ = " << pQueue << ", WQ = " << wQueue;
+
+            } else {
+
+                *out << "\r\e[K"
+                     << "Stopping threads: Left to Process = " << processQueue.size() << ", Left to Write = " << writeQueue.size();
+
+            }
+
+            if (!errors.empty()) {
+
+                *out << endl;
+
+                for (int i = 0; i < errors.size(); i++) {
+                    *out << errors[i] << endl;
+                }
+
+                errors.clear();
+
+            }
+
+            this_thread::sleep_for(chrono::seconds(1));
+
+        }
+
+        *out << "\r\e[K" << "Shutdown complete." << endl;
+        *out << "Total frames written to disk: " << writeCount << endl;
+
+        return 0;
+        
     }
     
 };

@@ -23,7 +23,8 @@ int main() {
         }
 
         int index = 0;
-
+        AT_H handle;
+        
         if (devices > 1) {
 
             index = -1;
@@ -31,19 +32,19 @@ int main() {
             cout << endl << "===================" << endl;
             cout         << " CONNECTED CAMERAS " << endl;
             cout         << "===================" << endl;
-   
+
+            AT_H* handles = new AT_H[devices];
+
             for (int i = 0; i < devices; i++) {
 
                 cout << i << ": Loading...";
 
-                AT_H handle = open(i);
+                handles[i] = open(i);
 
-                String model = getString(handle, "CameraModel");
-                String name  = getString(handle, "CameraName");
+                String model = getString(handles[i], "CameraModel");
+                String name  = getString(handles[i], "CameraName");
 
                 cout << "\r\e[K" << std::flush << i << ": " << name << " (" << model << ")" << endl;
-
-                AT_Close(handle);
 
             }
 
@@ -52,13 +53,23 @@ int main() {
                 cin >> index;
             }
 
+            handle = handles[index];
+
+            for (int i = 0; i < devices; i++) {
+
+                if (i != index) {
+                    AT_Close(handles[i]);
+                }
+
+            }
+
+        } else {
+            handle = open(0);
         }
 
         cin.get();
 
-        cout << "Opening camera... ";
-        AT_H handle = open(index);
-        cout << "Done." << endl;
+        cout << "Chosen: " << getString(handle, "CameraName") << endl;
 
         setBool(handle, "SensorCooling", true);
 
