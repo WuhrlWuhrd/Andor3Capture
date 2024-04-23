@@ -237,6 +237,7 @@ AT_H open(int index) {
 }
 
 #if !(defined(_WIN64) || defined(_WIN32))
+
 int AT_ConvertBuffer(AT_U8* inputBuffer, AT_U8* outputBuffer, AT_64 width, AT_64 height, AT_64 stride, const AT_WC * inputPixelEncoding, const AT_WC * outputPixelEncoding) {
     return AT_SUCCESS;
 }
@@ -244,24 +245,31 @@ int AT_ConvertBuffer(AT_U8* inputBuffer, AT_U8* outputBuffer, AT_64 width, AT_64
 int AT_ConvertBufferUsingMetadata(AT_U8* inputBuffer, AT_U8* outputBuffer, AT_64 imagesizebytes, const AT_WC * outputPixelEncoding) {
     return AT_SUCCESS;
 }
+
 int AT_GetWidthFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64& width) {
     return AT_SUCCESS;
 }
+
 int AT_GetHeightFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64& height) {
     return AT_SUCCESS;
 }
+
 int AT_GetStrideFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64& stride) {
     return AT_SUCCESS;
 }
+
 int AT_GetPixelEncodingFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_WC* pixelEncoding, AT_U8 pixelEncodingSize) {
     return AT_SUCCESS;
 }
+
 int AT_GetTimeStampFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64& timeStamp) {
     return AT_SUCCESS;
 }
+
 int AT_GetIRIGFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64* seconds, AT_64* minutes, AT_64* hours, AT_64* days, AT_64* years) {
     return AT_SUCCESS;
 }
+
 int AT_GetExtendedIRIGFromMetadata(AT_U8* inputBuffer, AT_64 imagesizebytes, AT_64 clockfrequency, double* nanoseconds, AT_64* seconds, AT_64* minutes, AT_64* hours, AT_64* days, AT_64* years) {
     return AT_SUCCESS;
 }
