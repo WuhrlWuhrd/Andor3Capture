@@ -17,9 +17,11 @@ int main() {
         cout << "Found " << devices << " connected cameras." << endl;
 
         if (devices == 0) {
+            
             cout << "Exiting." << endl;
             AT_FinaliseLibrary();
             return 0;
+
         }
 
         int index = 0;
@@ -41,8 +43,8 @@ int main() {
 
                 handles[i] = open(i);
 
-                String model = getString(handles[i], "CameraModel");
-                String name  = getString(handles[i], "CameraName");
+                string model = getString(handles[i], "CameraModel");
+                string name  = getString(handles[i], "CameraName");
 
                 cout << "\r\e[K" << std::flush << i << ": " << name << " (" << model << ")" << endl;
 
@@ -134,21 +136,21 @@ int main() {
         double rowTime     = getFloat(handle, "RowReadTime");
         double readTime    = getFloat(handle, "ReadoutTime");
         double transition  = getFloat(handle, "LongExposureTransition");
-        String mode        = getEnum(handle, "PixelReadoutRate");
-        String shutter     = getEnum(handle, "ElectronicShutteringMode");
+        string mode        = getEnum(handle, "PixelReadoutRate");
+        string shutter     = getEnum(handle, "ElectronicShutteringMode");
         long   accCount    = getInt(handle, "AccumulateCount");
 
-        cout << "Frame Rate: "          << rate       << " Hz" << endl;
-        cout << "Max Frame Rate: "      << maxRate    << " Hz" << endl;
-        cout << "Exposure Time: "       << exp        << " s"  << endl;
-        cout << "Min Exposure Time: "   << minExp     << " s"  << endl;
-        cout << "Accumulate Count: "    << accCount            << endl;
-        cout << "Min Row Read Time: "   << minRowTime << " s"  << endl;
-        cout << "Row Read Time: "       << rowTime    << " s"  << endl;
-        cout << "Readout Time: "        << readTime   << " s"  << endl;
-        cout << "Readout Rate: "        << mode                << endl;
+        cout << "Frame Rate:          " << rate       << " Hz" << endl;
+        cout << "Max Frame Rate:      " << maxRate    << " Hz" << endl;
+        cout << "Exposure Time:       " << exp        << " s"  << endl;
+        cout << "Min Exposure Time:   " << minExp     << " s"  << endl;
+        cout << "Accumulate Count:    " << accCount            << endl;
+        cout << "Min Row Read Time:   " << minRowTime << " s"  << endl;
+        cout << "Row Read Time:       " << rowTime    << " s"  << endl;
+        cout << "Readout Time:        " << readTime   << " s"  << endl;
+        cout << "Readout Rate:        " << mode                << endl;
         cout << "Exposure Transition: " << transition << " s"  << endl;
-        cout << "Shuttering Mode: "     << shutter             << endl;
+        cout << "Shuttering Mode:     " << shutter             << endl;
 
         A3C capture = A3C(handle);
 
@@ -172,7 +174,7 @@ int main() {
 
         return 0;
 
-    } catch (String e) {
+    } catch (string e) {
 
         cerr << "Error encountered. Error Code: " << e << "." << endl;
 

@@ -1,15 +1,13 @@
 #include <mutex>
 #include <condition_variable>
 
-#define Mutex std::mutex
-#define ConditionVariable std::condition_variable
-#define LockGuard std::lock_guard
-#define UniqueLock std::unique_lock
+using namespace std;
+
 
 class Semaphore {
 
-    Mutex             mutex;
-    ConditionVariable condition;
+    mutex              mtx;
+    condition_variable condition;
     
     unsigned long count = 0;
 
@@ -17,7 +15,7 @@ public:
 
     void release() {
 
-        LockGuard<decltype(mutex)> lock(mutex);
+        lock_guard<decltype(mtx)> lock(mtx);
 
         ++count;
 
@@ -27,7 +25,7 @@ public:
 
     void acquire() {
 
-        UniqueLock<decltype(mutex)> lock(mutex);
+        unique_lock<decltype(mtx)> lock(mtx);
 
         while (!count) // Handle spurious wake-ups.
             condition.wait(lock);
@@ -38,7 +36,7 @@ public:
 
     bool try_acquire() {
 
-        LockGuard<decltype(mutex)> lock(mutex);
+        lock_guard<decltype(mtx)> lock(mtx);
 
         if (count) {
 
@@ -54,4 +52,5 @@ public:
     void reset() {
         count = 0;
     }
+    
 };

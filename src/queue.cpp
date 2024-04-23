@@ -2,27 +2,25 @@
 #include <deque>
 #include "semaphore.cpp"
 
-#define Deque deque
-
 using namespace std;
 
 template<typename T> class FIFOQueue {
 
     private:
     
-        Mutex     lock;
+        mutex     lock;
         Semaphore gate;
-        Deque<T>  queue;
+        deque<T>  queue;
         int count = 0;
 
     public:
 
         void push(T toPush) {
 
-            lock.lock();
+            lock_guard<mutex> guard(lock);
+
             queue.push_back(toPush);
             count++;
-            lock.unlock();
             gate.release();
 
         }
@@ -33,10 +31,10 @@ template<typename T> class FIFOQueue {
 
             T item = queue.front();
 
-            lock.lock();
+            lock_guard<mutex> guard(lock);
+
             queue.pop_front();
             count--;
-            lock.unlock();
 
             return item;
 
@@ -44,11 +42,12 @@ template<typename T> class FIFOQueue {
 
         void clear() {
 
-            lock.lock();
+            lock_guard<mutex> guard(lock);
+            
             queue.clear();
             count = 0;
             gate.reset();
-            lock.unlock();
+            
 
         }
 
