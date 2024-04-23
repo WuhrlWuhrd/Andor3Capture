@@ -236,6 +236,7 @@ AT_H open(int index) {
     return handle;
 }
 
+// Dummy methods for when atutility.so is missing...
 #if !(defined(_WIN64) || defined(_WIN32))
 
 int AT_ConvertBuffer(AT_U8* inputBuffer, AT_U8* outputBuffer, AT_64 width, AT_64 height, AT_64 stride, const AT_WC * inputPixelEncoding, const AT_WC * outputPixelEncoding) {
