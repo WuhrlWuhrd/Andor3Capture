@@ -1,2 +1,5 @@
 build
 build/*
+libatcore.so.*
+__pycache__
+__pycache__/*
