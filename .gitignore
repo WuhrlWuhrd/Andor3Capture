@@ -1,5 +1,6 @@
 build
 build/*
-libatcore.so.*
+*atcore.*
+*atutility.*
 __pycache__
 __pycache__/*

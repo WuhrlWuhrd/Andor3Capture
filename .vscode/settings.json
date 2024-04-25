@@ -63,5 +63,5 @@
         "stop_token": "cpp",
         "thread": "cpp"
     },
-    "cmake.sourceDirectory": "/home/william/IdeaProjects/Andor3Capture/src"
+    "cmake.sourceDirectory": "/home/william/IdeaProjects/Andor3Capture"
 }
