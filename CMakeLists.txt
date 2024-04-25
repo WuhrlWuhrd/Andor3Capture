@@ -39,10 +39,10 @@ if(SWIG_FOUND)
 
     swig_add_library(PyAndor3Capture LANGUAGE python SOURCES src/A3C.i ${SOURCES})
 
-    if(UNIX)
-        swig_link_libraries(PyAndor3Capture ${LIB_CORE})
-    else()
+    if(LIB_UTILITY_FOUND)
         swig_link_libraries(PyAndor3Capture ${LIB_CORE} ${LIB_UTILITY})
+    else()
+        swig_link_libraries(PyAndor3Capture ${LIB_CORE})
     endif()
 
     set_target_properties(PyAndor3Capture PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SWIG_OUTDIR})
@@ -53,8 +53,9 @@ endif()
 
 add_executable(Andor3Capture src/main.cpp)
 
-if(UNIX)
-    target_link_libraries(Andor3Capture ${LIB_CORE})
-else()
+if(LIB_UTILITY_FOUND)
     target_link_libraries(Andor3Capture ${LIB_CORE} ${LIB_UTILITY})
+else()
+    target_link_libraries(Andor3Capture ${LIB_CORE})
+    add_compile_definitions(NO_LIB_UTILITY)
 endif()
