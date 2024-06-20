@@ -1,3 +1,4 @@
+#pragma once
 #include "atfunc.cpp"
 #include "queue.cpp"
 #include <ctime>
@@ -56,6 +57,12 @@ private:
     long     writeCount   = 0;
 
 public:
+
+    A3C(const A3C& other) {
+        this->handle     = other.handle;
+        this->outputPath = other.outputPath;
+        this->frameLimit = other.frameLimit;
+    }
 
     A3C(AT_H handle) {
 

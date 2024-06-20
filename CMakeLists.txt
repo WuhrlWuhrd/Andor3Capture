@@ -30,28 +30,29 @@ if(SWIG_FOUND)
     find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
     include_directories(${Python3_INCLUDE_DIRS})
 
-    SET_SOURCE_FILES_PROPERTIES(src/A3C.i PROPERTIES CPLUSPLUS ON)
-    SET_SOURCE_FILES_PROPERTIES(src/A3C.i PROPERTIES SWIG_FLAGS "-includeall")
-    SET_SOURCE_FILES_PROPERTIES(src/A3C.i PROPERTIES OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/build/PyAndor3Capture)
+    SET_SOURCE_FILES_PROPERTIES(src/Zyla.i PROPERTIES CPLUSPLUS ON)
+    SET_SOURCE_FILES_PROPERTIES(src/Zyla.i PROPERTIES SWIG_FLAGS "-includeall")
+    SET_SOURCE_FILES_PROPERTIES(src/Zyla.i PROPERTIES OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/build/PyZyla)
 
-    set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_LIST_DIR}/build/PyAndor3Capture)
-    set_property(SOURCE src/A3C.i PROPERTY CPLUSPLUS ON)
+    set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_LIST_DIR}/build/PyZyla)
+    set_property(SOURCE src/Zyla.i PROPERTY CPLUSPLUS ON)
 
-    swig_add_library(PyAndor3Capture LANGUAGE python SOURCES src/A3C.i ${SOURCES})
+    swig_add_library(PyZyla LANGUAGE python SOURCES src/Zyla.i ${SOURCES})
 
     if(LIB_UTILITY_FOUND)
-        swig_link_libraries(PyAndor3Capture ${LIB_CORE} ${LIB_UTILITY})
+        swig_link_libraries(PyZyla ${LIB_CORE} ${LIB_UTILITY})
     else()
-        swig_link_libraries(PyAndor3Capture ${LIB_CORE})
+        swig_link_libraries(PyZyla ${LIB_CORE})
     endif()
 
-    set_target_properties(PyAndor3Capture PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SWIG_OUTDIR})
+    set_target_properties(PyZyla PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SWIG_OUTDIR})
 
 else()
     message("SWIG NOT FOUND! No Python module will be compiled as a result.")
 endif()         
 
 add_executable(Andor3Capture src/main.cpp)
+add_library(Zyla SHARED src/Zyla.cpp)
 
 if(LIB_UTILITY_FOUND)
     target_link_libraries(Andor3Capture ${LIB_CORE} ${LIB_UTILITY})

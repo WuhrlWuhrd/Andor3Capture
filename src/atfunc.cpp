@@ -189,8 +189,7 @@ string getString(AT_H handle, string feature) {
 
 }
 
-void setEnum(AT_H handle, string feature, string value)
-{
+void setEnum(AT_H handle, string feature, string value) {
 
     int result = AT_SetEnumString(handle, stringToWC(feature), stringToWC(value));
 
@@ -199,6 +198,7 @@ void setEnum(AT_H handle, string feature, string value)
         oss << feature << " = " << value << ": " << result;
         throw oss.str();
     }
+    
 }
 
 void printEnum(AT_H handle, string feature) {
@@ -238,6 +238,10 @@ AT_H open(int index) {
 
 // Dummy methods for when atutility.so is missing...
 #if defined(NO_LIB_UTILITY)
+
+int AT_InitialiseUtilityLibrary() {
+    return AT_SUCCESS;
+}
 
 int AT_ConvertBuffer(AT_U8* inputBuffer, AT_U8* outputBuffer, AT_64 width, AT_64 height, AT_64 stride, const AT_WC * inputPixelEncoding, const AT_WC * outputPixelEncoding) {
     return AT_SUCCESS;
