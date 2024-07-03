@@ -5,10 +5,11 @@
 #include <fstream>
 #include <thread>
 #include <vector>
+#include <iterator>
 
 bool initialised = false;
 
-std::map<int, std::string> errorNames{
+std::map<int, std::string> errorNames {
 
     {AT_SUCCESS, "SUCCESS"},
     {AT_ERR_NOTINITIALISED, "ERR_NOTINITIALISED"},
@@ -54,10 +55,8 @@ std::map<int, std::string> errorNames{
 
 };
 
-
 class A3C {
-
-private:
+   private:
 
     AT_H   handle;
     string outputPath;
@@ -80,8 +79,11 @@ private:
     long     acquireCount = 0;
     long     processCount = 0;
     long     writeCount   = 0;
+    long     acquireFPS   = 0;
+    long     processFPS   = 0;
+    long     writeFPS     = 0;
 
-public:
+   public:
 
     A3C(const A3C& other) {
         
@@ -205,7 +207,7 @@ public:
         // Start the acquisition
         AT_Command(handle, L"AcquisitionStart");
 
-        for (acquireCount = 0; running; acquireCount++) {
+        for (acquireCount = 0; running && (frameLimit <= 0 || acquireCount < frameLimit); acquireCount++) {
 
             // Create new buffer, queue it and await data
             unsigned char *buffer = new unsigned char[imageSize];
@@ -233,6 +235,8 @@ public:
             processQueue.push(pBuffer);
 
         }
+
+        running = false;
 
         // Stop acquisition and flush through any remaining buffers
         AT_Command(handle, L"AcquisitionStop");
@@ -347,6 +351,11 @@ public:
                     << "A = " << aRate << " Hz, P = " << pRate << " Hz, "
                     << ", W = " << wRate << " Hz, PQ = " << pQueue << ", WQ = " << wQueue;
 
+
+                acquireFPS = aRate;
+                processFPS = pRate;
+                writeFPS   = wRate;
+
             } else {
 
                 *out << "\r\e[K" << "Stopping threads: Left to Process = " << processQueue.size() << ", Left to Write = " << writeQueue.size();
@@ -365,6 +374,8 @@ public:
 
             }
 
+            out->flush();
+
             this_thread::sleep_for(chrono::seconds(1));
 
         }
@@ -375,7 +386,38 @@ public:
         return 0;
 
     }
-    
+
+    long getAcquireFPS() {
+        return acquireFPS;
+    }
+
+    long getProcessFPS() {
+        return processFPS;
+    }
+
+    long getWriteFPS() {
+        return writeFPS;
+    }
+
+    long getProcessQueueSize() {
+        return processQueue.size();
+    }
+
+    long getWriteQueueSize() {
+        return writeQueue.size();
+    }
+
+    long getAcquireCount() {
+        return acquireCount;
+    }
+
+    bool isRunning() {
+        return running;
+    }
+
+    bool isMonitoring() {
+        return monitoring;
+    }
 };
 
 class Track {
@@ -426,6 +468,88 @@ class Track {
 
     void setBinned(bool value) {
         binned = value;
+    }
+
+};
+
+class Acquisition {
+    
+    private:
+
+    unsigned short* data;
+    long width  = 0;
+    long height = 0;
+    long size   = 0;
+
+    public:
+     
+    Acquisition(unsigned short* data, long width, long height) {
+        this->data   = data;
+        this->width  = width;
+        this->height = height;
+        this->size   = width * height;
+    }
+
+    Acquisition(const Acquisition& other) {
+        this->width  = other.width;
+        this->height = other.height;
+        this->size   = other.size;
+        this->data   = new unsigned short[size];
+
+        for (int i = 0; i < size; i++) {
+            data[i] = other.data[i];
+        }
+
+    }
+
+    ~Acquisition() {
+        delete[] data;
+    }
+
+    long getWidth() {
+        return width;
+    }
+
+    long getHeight() {
+        return height;
+    }
+
+    long getSize() {
+        return size;
+    }
+
+    std::vector<unsigned short> getArray() {
+        return std::vector<unsigned short>(data, data + size);
+    }
+
+    unsigned short getPixel(int row, int column) {
+
+        if (row < 0 || row >= height) {
+            throw std::string("Row index out of range");
+        }
+
+        if (column < 0 || column >= width) {
+            throw std::string("Column index out of range");
+        }
+
+        return data[row * width + column];
+
+    }
+
+    unsigned short operator()(int row, int column) {
+        return getPixel(row, column);
+    }
+
+    static Acquisition example() {
+
+        unsigned short* array = new unsigned short[8];
+
+        for (int i = 0; i < 8; i++){
+            array[i] = i + 1;
+        }
+
+        return Acquisition(array, 2, 4);
+
     }
 
 };
@@ -721,6 +845,80 @@ class Zyla {
 
     }
 
+    void queueBuffer(unsigned char buffer[], int bufferSize) { 
+
+        int result = AT_QueueBuffer(handle, buffer, bufferSize);
+
+        if (result != AT_SUCCESS) {
+            ostringstream oss;
+            oss << "Queuing Buffer: " << errorNames[result] << " (" << result << ")";
+            throw oss.str();
+        }
+
+    }
+
+    void queueBuffer(int size) {
+        queueBuffer(new unsigned char[size], size);
+    }
+
+    void queueBuffer() {
+        int size = getImageSizeBytes();
+        queueBuffer(new unsigned char[size], size);
+    }
+
+    unsigned char* awaitBuffer(unsigned int timeout, int* size) {
+
+        unsigned char* pointer;
+
+        int result = AT_WaitBuffer(handle, &pointer, size, timeout);
+
+        if (result != AT_SUCCESS) {
+            ostringstream oss;
+            oss << "Awaiting Buffer: " << errorNames[result] << " (" << result << ")";
+            throw oss.str();
+        }
+
+        return pointer;
+
+    }
+
+    unsigned char* acquireRaw(int timeout, int* size) {
+
+        queueBuffer();
+        acquisitionStart();
+
+        unsigned char* buffer = awaitBuffer(timeout, size);
+
+        acquisitionStop();
+        flush();
+
+        return buffer;
+
+    }
+
+    Acquisition acquire(int timeout) {
+
+        long width      = getAOIWidth();
+        long height     = getAOIHeight();
+        long stride     = getAOIStride();
+        std::string enc = getPixelEncodingOptions()[getPixelEncoding()];
+
+        int size;
+        unsigned char* pointer = acquireRaw(timeout, &size);
+        unsigned char* output  = new unsigned char[2 * width * height];
+
+        int result = AT_ConvertBuffer(pointer, output, width, height, stride, stringToWC(enc), L"Mono16");
+
+        if (result != AT_SUCCESS) {
+            ostringstream oss;
+            oss << "Acquiring Image: " << errorNames[result] << " (" << result << ")";
+            throw oss.str();
+        }
+
+        return Acquisition((unsigned short*) output, width, height);
+        
+    }
+
     long getAccumulateCount() {
         return getInt("AccumulateCount");
     }
@@ -743,6 +941,18 @@ class Zyla {
 
     void acquisitionStop() {
         command("AcquisitionStop");
+    }
+
+    void flush() {
+
+        int result = AT_Flush(handle);
+
+        if (result != AT_SUCCESS) {
+            ostringstream oss;
+            oss << "Flushing Buffers: " << errorNames[result] << " (" << result << ")";
+            throw oss.str();
+        }
+
     }
 
     bool isAlternatingReadoutDirection() {

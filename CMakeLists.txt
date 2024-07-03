@@ -45,6 +45,9 @@ if(SWIG_FOUND)
         swig_link_libraries(PyZyla ${LIB_CORE})
     endif()
 
+    configure_file(src/python/zylaui.py ${CMAKE_SWIG_OUTDIR}/zylaui.py COPYONLY)
+    configure_file(src/python/dataStream.ui ${CMAKE_SWIG_OUTDIR}/dataStream.ui COPYONLY)
+
     set_target_properties(PyZyla PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SWIG_OUTDIR})
 
 else()

@@ -1,6 +1,7 @@
 %module PyZyla
 %include std_string.i
 %include std_map.i
+%include stdint.i
 %include std_vector.i
 %include exception.i   
 %inline %{
@@ -20,6 +21,9 @@
         SWIG_exception(SWIG_RuntimeError, "unknown exception");
     }
 }
+
+%template(ushort_vector) std::vector<unsigned short>;
+%template(options) std::map<int, std::string>;
 
 class A3C {
 
@@ -43,6 +47,21 @@ public:
 
     void stop();
 
+    long getAcquireFPS();
+
+    long getProcessFPS();
+
+    long getWriteFPS();
+
+    long getProcessQueueSize();
+
+    long getWriteQueueSize();
+
+    long getAcquireCount();
+
+    bool isRunning();
+
+    bool isMonitoring();
 };
 
 class Track {
@@ -65,6 +84,41 @@ class Track {
 
     void setBinned(bool value);
 
+};
+
+class Acquisition {
+
+    public:
+
+    Acquisition(unsigned short* data, long width, long height);
+
+    Acquisition(const Acquisition& other);
+
+    ~Acquisition();
+
+    long getWidth();
+
+    long getHeight();
+
+    long getSize();
+
+    unsigned short getPixel(int row, int column);
+
+    std::vector<unsigned short> getArray();
+
+    static Acquisition example();
+
+    unsigned short operator()(int row, int column);
+
+    %pythoncode %{
+
+        def numpy(self):
+
+            import numpy as np
+            return np.reshape(self.getArray(), (self.getHeight(), self.getWidth()))
+
+    %}
+    
 };
 
 class Zyla {
@@ -110,6 +164,18 @@ class Zyla {
     void command(std::string feature);
 
     std::map<int, std::string> getEnumOptions(std::string feature);
+
+    void queueBuffer(unsigned char buffer[], int bufferSize);
+
+    void queueBuffer(int size);
+
+    void queueBuffer();
+
+    unsigned char* awaitBuffer(unsigned int timeout, int* size);
+
+    unsigned char* acquireRaw(int timeout, int* size);
+
+    Acquisition acquire(int timeout);
 
     long getAccumulateCount();
 

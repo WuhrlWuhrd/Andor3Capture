@@ -64,6 +64,7 @@
         "variant": "cpp",
         "format": "cpp",
         "list": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "zyla.cpp": "c"
     }
 }
